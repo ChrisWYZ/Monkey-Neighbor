@@ -1,0 +1,275 @@
+	<title>订单管理</title>
+	<script>
+		var baseURL = "http://134.175.100.63:6677"
+		// 加载数据
+		function reloadData(){
+			var url = baseURL+"/order/findAll";
+			$.get(url,function(result){
+				if(result.status === 200){
+					$("#order_table tbody").empty();
+					result.data.forEach(function(item){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.customerId+`</td>
+							<td>`+item.waiterId+`</td>
+							<td>`+item.total+`</td>
+							<td>
+								<a href="javascript:void(0)"><i id="delete" class="fa fa-trash text-danger mr-3"></i></a>
+								<a href="javascript:void(0)"><i id="update" class="fa fa-edit text-primary"></i></a>
+							</td>
+						</tr>`).appendTo("#order_table tbody");
+					});
+				}
+
+			});
+		}
+
+		// 关闭模态框
+		function closeorderModal(){
+			$("#orderModal").modal("hide");
+		}
+		// 弹出提示框
+		function toast(msg){
+			$(".toast .toast-body").text(msg);
+			$(".toast").toast("show")
+		}
+
+		// 提交表单
+		function submitorder(){
+			// 1. 获取参数
+			var id = $("#order_form input[name=id]").val();
+
+			var customerId = $("#order_form input[name=customerId]").val();
+
+			var total = $("#order_form input[name=total]").val();
+			// 参数校验
+			// 2. 调用后台接口保存
+			var data;
+			if(id) {
+				data = {
+				id:id,
+				customerId:customerId,
+				total:total
+				}
+			}
+			else{
+				data = {
+				customerId:customerId,
+				total:total
+				}
+			}
+			var url = baseURL+"/order/save"
+			$.post(url,data,function(result){
+				if(result.status === 200){
+					// 3. 关闭模态
+					closeorderModal();
+					// 4. 刷新数据
+					reloadData()
+					// 5. 提示录入成功
+					toast("录入成功");
+				} else {
+					alert(result.message);
+				}
+			});
+			
+		}
+
+
+
+		$(function(){
+			// 初始化toast
+			$(".toast").toast({
+				delay:2000
+			})
+			// 加载数据
+			reloadData();
+			// 为按钮绑定事件
+			$("#btn_add_order").click(function(){
+				$("#order_form input[name=id]").val('');
+				$("#order_form input[name=total]").val('');
+				$("#order_form input[name=customerId]").val('');
+
+				//显示模态框
+				$("#orderModal").modal("show");
+			});
+
+			//批量删除
+			$('#btn_batch_del_order').click(function() {
+				var	ids = $("input:checkbox").filter(":checked").map(function(index,item){
+						return $(item).val()
+					})
+				.toArray();
+				var	data = "";
+				for(var key in ids){
+					var id = ids[key];
+					if (key==0) {
+						data+="ids="+id
+					}else{
+						data+="&ids="+id
+					}
+				}
+				$.ajax({
+					url:baseURL+"/order/batchDelete",
+					method:"post",
+					data:data,
+					success:function(result){
+						console.log(result);
+						if (result.status===200){
+							alert("批量删除成功");
+							reloadData();
+						}else{
+							alert(result.message);
+						}
+					}
+				})
+			})
+			//单个删除和修改
+
+			$("tbody").on("click",function(event){
+				if (event.target.id ==="delete") {
+					// 获取当前行的id
+					var id = $(event.target).parents("tr").find('input[type=checkbox]').val();
+					// 交互
+					var url = baseURL +"/order/deleteById"
+					var data = "id="+id;
+					console.log(id);
+					$.get(url,data,function(result){
+						if(result.status === 200){
+							alert(result.message)
+							reloadData();
+						} else {
+							alert(result.message);
+						}
+					});
+				}else if (event.target.id ==="update") {
+					$('#orderModal').modal("show");
+					var id = $(event.target).parents("tr").find('input[type=checkbox]').val();
+					var customerId = $(event.target).parents("tr").children().eq(1).text();
+					var total = $(event.target).parents("tr").children().eq(3).text();
+					console.log('id='+id+'customerId='+customerId+'total='+total);
+					$("#input_id").val(id);
+					$("#input_customerId").val(customerId);
+					$("#input_total").val(total);
+				}
+			})
+
+			
+		});
+		
+
+	
+	</script>
+	<!-- 样式 -->
+	<style>
+		tbody {
+			background-image: url(https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3251793578,2590133884&fm=26&gp=0.jpg);
+			background-size: contain;
+		</style>
+<body>
+	<div class="container">
+		<br>
+		
+		<!-- 按钮 -->
+		<button id="btn_add_order" class="btn btn-primary mb-2">添加</button>
+		<button id="btn_batch_del_order" class="btn btn-primary mb-2">批量删除</button>
+
+		<!-- / 按钮 -->
+
+		<!-- 表格 -->
+		<table class="table table-hover" id="order_table">
+			<thead>
+				<tr>
+					<td>订单号</td>
+					<td>顾客ID</td>
+					<td>服务员ID</td>
+					<td>数目</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+			<tbody>
+				
+			</tbody>
+		</table>
+
+
+		<!-- / 表格 -->
+
+
+		<!-- 模态框 -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">添加订单信息</h5>
+        <button type="button" class="close" onclick="closeorderModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+  <!-- 表单 -->
+		<form action="/register" id="order_form">
+			<!-- 密码 -->
+			<div class="form-group row">
+				<label for="input_id" class="col-2 text-right">ID</label>
+				<div class="col-10" >
+					<input id="input_id" name="id" type="id" class="form-control">
+				</div>
+			</div>
+			<!-- / 密码 -->
+			<!-- 用户名 -->
+			<div class="form-group row">
+				<label for="input_customerId" class="col-2 text-right">顾客ID</label>
+				<div class="col-10" >
+					<input id="input_customerId" name="customerId" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 用户名 -->
+			<!-- 手机 -->
+			<div class="form-group row">
+				<label for="input_total" class="col-2 text-right">total</label>
+				<div class="col-10" >
+					<input id="input_total" name="total" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 手机号 -->
+		</form>
+		<!-- / 表单 -->     
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeorderModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="submitorder()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- / 模态框 -->
+<!-- 提示框 -->
+<div class="toast" style="position: absolute;top: 6px;right: 1em">
+  <div class="toast-header">
+    <i class="fa fa-bell text-success mr-5"></i>
+    <strong class="mr-auto">success</strong>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">
+      <span>&times;</span>
+    </button>
+  </div>
+  <div class="toast-body"> </div> 
+</div>
+
+
+
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

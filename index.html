@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>后台网页</title>
+	<link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
+	<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+	<link href="https://cdn.bootcss.com/font-awesome/5.10.2/css/all.css" rel="stylesheet">
+	<!-- <script type="text/javascript" src="./js/jquery-3.4.1.min.js"></script> -->
+	<script type="text/javascript" src="./bootstrap/js/bootstrap.js"></script>
+	<script type="text/javascript" src="./js/index.js"></script>
+	<link rel="shortcut icon" href="#" />
+</head>
+<style>
+	* {
+		text-align: center;
+	}
+	.header {
+		color: #ededed;
+		font-size: 1.5rem;
+		line-height: 4rem;
+	}
+	#carouselExampleSlidesOnly img {
+		width: 100%;
+	}
+	.ci{
+		position: relative;
+		left: 25%;
+		width: 600px;
+		height: 400px;
+	}
+	.fa {
+		height: 16px;
+		margin-right: 1em;
+	}
+	#icon_home > span {
+		display: inline-block;
+		font-size:14px;
+		color: #ededed;
+		margin-left: 1em;
+		cursor: pointer;
+	}
+</style>
+
+<body>
+	<!-- 框架 -->
+	
+	<div class="container-fluid">
+		<!-- 开头 -->
+		<div class="row header bg-dark px-3">
+			Ej家政服务中心
+		</div>
+		<!-- /开头 -->
+		<!-- 内容主体 -->
+		<div class="row">
+			<!-- 左侧导航栏 -->
+			<div class=" left_nav col-md-2 bg-light ">
+				<a class="btn nav-item nav-link" url="./pages/customer.html" href="javaScript:void(0)"><i class="fa fa-user-alt"></i>顾客管理</a>
+				<a class="btn nav-item nav-link" url="./pages/order.html" href="javaScript:void(0)"><i class="fa fa-clipboard-list"></i>订单管理</a>
+				<a class="btn nav-item nav-link" url="./pages/product.html" href="javaScript:void(0)"><i class="fa fa-box"></i>产品管理</a>
+				<a class="btn nav-item nav-link" url="./pages/address.html" href="javaScript:void(0)"><i class="fa fa-address-card"></i>地址管理</a>
+				<a class="btn nav-item nav-link" url="./pages/waiter.html" href="javaScript:void(0)"><i class="fa fa-pray"></i>员工管理</a>
+				<a class="btn nav-item nav-link" url="./pages/category.html" href="javaScript:void(0)"><i class="fa fa-pray"></i>栏目管理</a>
+			
+			</div>
+			<!-- 右侧内容区 -->
+			<div class="col">
+				<div class="bg-secondary">
+					<i class="fa fa-home" id="icon_home">
+						<span>首页&nbsp></span>
+					    <span id="fuckyou"></span>
+					</i>
+					    
+					<i class="fa fa-bars" id="icon_bars"></i>
+				</div>
+				<div class="content" id="wrapper">
+					
+					<div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+						<h1>这是个首页!</h1>
+  						<div class="carousel-inner ci">
+    						<div class="carousel-item active">
+        						<img src="./images/0.jpg" class="d-block w-100" alt="...">
+    						</div>
+    						<div class="carousel-item">
+      							<img src="./images/1.jpg" class="d-block w-100" alt="...">
+    						</div>
+					    	<div class="carousel-item">
+					      		<img src="./images/2.jpg" class="d-block w-100" alt="...">
+					    	</div>
+  						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+	
+</body>
+</html>

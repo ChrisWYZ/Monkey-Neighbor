@@ -1,0 +1,296 @@
+	<title>栏目管理</title>
+	<script>
+		var baseURL = "http://134.175.100.63:6677"
+		// 加载数据
+		function reloadData(){
+			var url = baseURL+"/category/findAll";
+			$.get(url,function(result){
+				if(result.status === 200){
+					$("#category_table tbody").empty();
+					result.data.forEach(function(item){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.name+`</td>
+							<td>`+item.num+`</td>
+							<td>`+item.parentId+`</td>
+							<td>
+								<a href="javascript:void(0)"><i id="delete" class="fa fa-trash text-danger mr-3"></i></a>
+								<a href="javascript:void(0)"><i id="update" class="fa fa-edit text-primary"></i></a>
+							</td>
+						</tr>`).appendTo("#category_table tbody");
+					});
+				}
+
+			});
+		}
+
+		// 关闭模态框
+		function closecategoryModal(){
+			$("#categoryModal").modal("hide");
+		}
+		// 弹出提示框
+		function toast(msg){
+			$(".toast .toast-body").text(msg);
+			$(".toast").toast("show")
+		}
+
+		// 提交表单
+		function submitcategory(){
+			// 1. 获取参数
+			var id = $("#category_form input[name=id]").val();
+
+			var name = $("#category_form input[name=name]").val();
+
+			var num = $("category_form input[name=num]").val();
+
+		
+			// 参数校验
+			// 2. 调用后台接口保存
+			var data = {
+				id:id,
+				name:name,
+				num:num
+			}
+			var url = baseURL+"/category/saveOrUpdate"
+			$.post(url,data,function(result){
+				if(result.status === 200){
+					// 3. 关闭模态
+					closecategoryModal();
+					// 4. 刷新数据
+					reloadData()
+					// 5. 提示录入成功
+					toast("录入成功");
+				} else {
+					alert("接口异常！");
+				}
+			});
+			
+		}
+
+
+
+		$(function(){
+			// 初始化toast
+			$(".toast").toast({
+				delay:2000
+			})
+			// 加载数据
+			reloadData();
+			// 为按钮绑定事件
+			$("#btn_add_category").click(function(){
+				$("#category_form input[name=id]").val('')
+				$("#category_form input[name=name]").val('')
+				$("#category_form input[name=num]").val('')
+
+				//显示模态框
+				$("#categoryModal").modal("show");
+			});
+
+
+			//根据名字筛选顾客
+			$("#chaxun").click(function(){
+				var shuru = $('#input_shuru').val();
+	            $("#category_table tbody tr").hide();
+	            var result = $("#category_table tbody tr").filter(":contains('"+shuru+"')")
+	            result.show()
+			})
+			//刷新当前页面
+			$("#huifu").click(function(){
+				window.location.reload()
+			})
+
+
+
+
+			//批量删除
+			$('#btn_batch_del_category').click(function() {
+				var	ids = $("input:checkbox").filter(":checked").map(function(index,item){
+						return $(item).val()
+					})
+				.toArray();
+				var	data = "";
+				for(var key in ids){
+					var id = ids[key];
+					if (key==0) {
+						data+="ids="+id
+					}else{
+						data+="&ids="+id
+					}
+				}
+				$.ajax({
+					url:baseURL+"/category/batchDelete",
+					method:"post",
+					data:data,
+					success:function(result){
+						console.log(result);
+						if (result.status===200){
+							alert("批量删除成功");
+							reloadData();
+						}else{
+							alert(result.message);
+						}
+					}
+				})
+			})
+			//单个删除和修改
+
+			$("tbody").on("click",function(event){
+				if (event.target.id ==="delete") {
+					// 获取当前行的id
+					var id = $(event.target).parents("tr").find('input[type=checkbox]').val();
+					// 交互
+					var url = baseURL +"/category/deleteById"
+					var data = "id="+id;
+					console.log(id);
+					$.get(url,data,function(result){
+						if(result.status === 200){
+							alert(result.message)
+							reloadData();
+						} else {
+							alert(result.message);
+						}
+					});
+				}else if (event.target.id ==="update") {
+					$('#categoryModal').modal("show");
+					var id = $(event.target).parents("tr").find('input').val();
+					var name = $(event.target).parents("tr").children().eq(1).text();
+					var num = $(event.target).parents("tr").children().eq(2).text();
+					
+					$("#input_id").val(id);
+					$("#input_name").val(name);
+					$("#input_num").val(num);
+				}
+			})
+
+			
+		});
+		
+
+	
+	</script>
+	<!-- 样式 -->
+	<style>
+		tbody {
+			background-image: url(https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3251793578,2590133884&fm=26&gp=0.jpg);
+			background-size: contain;
+	</style>
+<body>
+	<div class="container">
+		<br>
+		
+		<!-- 按钮 -->
+		<button id="btn_add_category" class="btn btn-primary mb-2">添加</button>
+		<button id="btn_batch_del_category" class="btn btn-primary mb-2">批量删除</button>
+
+		<!-- / 按钮 -->
+
+		<div class="input-group">
+		  <input type="text" class="form-control" placeholder="请输入描述" id="input_shuru">
+		  <div class="input-group-append" id="button-addon4">
+		    <button class="btn btn-primary mr-1" type="button" id="chaxun">查询</button>
+		    <button class="btn btn-primary " type="button" id="huifu">恢复</button>
+		  </div>
+		</div>
+
+
+
+
+		<!-- 表格 -->
+		<table class="table table-hover" id="category_table">
+			<thead>
+				<tr>
+					<td>编号</td>
+					<td>名称</td>
+					<td>num</td>
+					<td>parentId</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+			<tbody>
+				
+			</tbody>
+		</table>
+
+
+		<!-- / 表格 -->
+
+
+		<!-- 模态框 -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">添加顾客信息</h5>
+        <button type="button" class="close" onclick="closecategoryModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+  <!-- 表单 -->
+		<form action="/register" id="category_form">
+			
+			<!-- ID -->
+			<div class="form-group row">
+				<label for="input_id" class="col-2 text-right">ID</label>
+				<div class="col-10" >
+					<input id="input_id" name="id" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / ID -->
+			<!-- 用户名 -->
+			<div class="form-group row">
+				<label for="input_name" class="col-2 text-right">名称</label>
+				<div class="col-10" >
+					<input id="input_name" name="name" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 用户名 -->
+			<!-- 手机 -->
+			<div class="form-group row">
+				<label for="input_num" class="col-2 text-right">num</label>
+				<div class="col-10" >
+					<input id="input_num" name="num" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 手机号 -->
+		</form>
+		<!-- / 表单 -->     
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closecategoryModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="submitcategory()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- / 模态框 -->
+<!-- 提示框 -->
+<div class="toast" style="position: absolute;top: 6px;right: 1em">
+  <div class="toast-header">
+    <i class="fa fa-bell text-success mr-5"></i>
+    <strong class="mr-auto">success</strong>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">
+      <span>&times;</span>
+    </button>
+  </div>
+  <div class="toast-body"> </div> 
+</div>
+
+
+
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

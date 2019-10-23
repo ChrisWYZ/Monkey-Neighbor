@@ -1,0 +1,67 @@
+		html,body,.sy,.wrapper{
+				height: 100%;
+				color: #333;
+				margin: 0;
+				padding: 0;
+			}
+		.sy>.wrapper{
+			position: relative;
+			display: flex;
+			flex-direction: column;
+		}
+		.sy>.wrapper>.top{
+			flex-basis: 20%;
+			text-align: center;
+			background-color: #1369c0;
+		}
+		.sy>.wrapper>.top>b{
+			font-size: 3em;
+			position: relative;
+			top: 10%;
+		}
+		.sy>.wrapper>.bottom{
+			flex: 1;
+		}
+		.sy>.wrapper>.bottom::after{
+			display: block;
+			content: "";
+			clear: both;
+		}
+		.sy>.wrapper>.bottom>.left{
+			width: 15%;
+			height: 100%;
+			float: left;
+			overflow-y:none; 
+			background-color: #428bf1;
+		}
+		.sy>.wrapper>.bottom>.right{
+			height: 100%;
+			width: 85%;
+			float: right;
+			background-color:#ededed;
+		}
+		.sy>.wrapper>.bottom>.right>.content{
+			height: 96%;
+			width: 96%;
+			margin: 2%;
+			background-color: #fff;
+		}
+		.sy>.wrapper>.bottom>.left>ul{
+			width: 100%;
+		}
+		.sy>.wrapper>.bottom>.left>ul li.current {
+			background-color: #ededed;
+		}
+		.sy>.wrapper>.bottom>.left>ul>li{
+			list-style: none;
+			border-top: 1px solid #ededed;
+			border-bottom: 1px solid #ededed;
+			position: relative;
+			left: -40px;
+		}
+		.sy>.wrapper>.bottom>.left>ul>li>a{
+			font-size: 2em;
+			text-align: right;
+			color: #333;
+			text-decoration: none;
+		}

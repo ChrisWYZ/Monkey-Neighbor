@@ -1,0 +1,273 @@
+	<title>顾客管理</title>
+	<script>
+		var baseURL = "http://134.175.100.63:6677"
+		// 加载数据
+		function reloadData(){
+			var url = baseURL+"/customer/findAll";
+			$.get(url,function(result){
+				if(result.status === 200){
+					$("#customer_table tbody").empty();
+					result.data.forEach(function(item){
+						$(`<tr>
+							<td><input type="checkbox" value="`+item.id+`"></td>
+							<td>`+item.realname+`</td>
+							<td>`+item.status+`</td>
+							<td>`+item.telephone+`</td>
+							<td>
+								<a href="javascript:void(0)"><i id="delete" class="fa fa-trash text-danger mr-3"></i></a>
+								<a href="javascript:void(0)"><i id="update" class="fa fa-edit text-primary"></i></a>
+							</td>
+						</tr>`).appendTo("#customer_table tbody");
+					});
+				}
+
+			});
+		}
+
+		// 关闭模态框
+		function closeCustomerModal(){
+			$("#customerModal").modal("hide");
+		}
+		// 弹出提示框
+		function toast(msg){
+			$(".toast .toast-body").text(msg);
+			$(".toast").toast("show")
+		}
+
+		// 提交表单
+		function submitCustomer(){
+			// 1. 获取参数
+			var id = $("#customer_form input[name=id]").val();
+
+			var realname = $("#customer_form input[name=realname]").val();
+
+			var telephone = $("#customer_form input[name=telephone]").val();
+			// 参数校验
+			// 2. 调用后台接口保存
+			var data = {
+				id:id,
+				realname:realname,
+				telephone:telephone
+			}
+			var url = baseURL+"/customer/saveOrUpdate"
+			$.post(url,data,function(result){
+				if(result.status === 200){
+					// 3. 关闭模态
+					closeCustomerModal();
+					// 4. 刷新数据
+					reloadData()
+					// 5. 提示录入成功
+					toast("录入成功");
+				} else {
+					alert("接口异常！");
+				}
+			});
+			
+		}
+
+
+
+		$(function(){
+			// 初始化toast
+			$(".toast").toast({
+				delay:2000
+			})
+			// 加载数据
+			reloadData();
+			// 为按钮绑定事件
+			$("#btn_add_customer").click(function(){
+				$("#customer_form input[name=id]").val('');
+				$("#customer_form input[name=realname]").val('');
+				$("#customer_form input[name=telephone]").val('');
+
+				//显示模态框
+				$("#customerModal").modal("show");
+			});
+			//根据名字筛选顾客
+			$("#chaxun").click(function(){
+				var shuru = $('#input_shuru').val();
+	            // $("#customer_table tbody tr").hide().filter(":contains('"+shuru+"')").show();
+	            $("#customer_table tbody tr").hide();
+	            var result = $("#customer_table tbody tr").filter(":contains('"+shuru+"')")
+	            result.show()
+			})
+			//刷新当前页面
+			$("#huifu").click(function(){
+				window.location.reload()
+			})
+			//批量删除
+			$('#btn_batch_del_customer').click(function() {
+				var	ids = $("input:checkbox").filter(":checked").map(function(index,item){
+						return $(item).val()
+					})
+				.toArray();
+				var	data = "";
+				for(var key in ids){
+					var id = ids[key];
+					if (key==0) {
+						data+="ids="+id
+					}else{
+						data+="&ids="+id
+					}
+				}
+				$.ajax({
+					url:baseURL+"/customer/batchDelete",
+					method:"post",
+					data:data,
+					success:function(result){
+						console.log(result);
+						if (result.status===200){
+							alert("批量删除成功");
+							reloadData();
+						}else{
+							alert(result.message);
+						}
+					}
+				})
+			})
+			//单个删除和修改
+
+			$("tbody").on("click",function(event){
+				if (event.target.id ==="delete") {
+					// 获取当前行的id
+					var id = $(event.target).parents("tr").find('input[type=checkbox]').val();
+					// 交互
+					var url = baseURL +"/customer/deleteById"
+					var data = "id="+id;
+					console.log(id);
+					$.get(url,data,function(result){
+						if(result.status === 200){
+							alert(result.message)
+							reloadData();
+						} else {
+							alert(result.message);
+						}
+					});
+				}else if (event.target.id ==="update") {
+					$('#customerModal').modal("show");
+					var id = $(event.target).parents("tr").find('input').val();
+					var realname = $(event.target).parents("tr").children().eq(1).text();
+					var telephone = $(event.target).parents("tr").children().eq(3).text();
+					console.log('id='+id+'realname='+realname+'telephone='+telephone);
+					$("#input_id").val(id);
+					$("#input_realname").val(realname);
+					$("#input_telephone").val(telephone);
+				}
+			})
+
+			
+		});
+		
+
+	
+	</script>
+	<!-- 样式 -->
+	<style>
+		tbody {
+			background-image: url(https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3251793578,2590133884&fm=26&gp=0.jpg);
+			background-size: contain;
+	</style>
+<body>
+	<div class="container">
+		<br>
+		
+		<!-- 按钮 -->
+		<button id="btn_add_customer" class="btn btn-primary mb-2">添加</button>
+		<button id="btn_batch_del_customer" class="btn btn-primary mb-2">批量删除</button>
+
+		<!-- / 按钮 -->
+		<div class="input-group">
+		  <input type="text" class="form-control" placeholder="请输入顾客名字" id="input_shuru">
+		  <div class="input-group-append" id="button-addon4">
+		    <button class="btn btn-primary mr-1" type="button" id="chaxun">查询</button>
+		    <button class="btn btn-primary " type="button" id="huifu">恢复</button>
+		  </div>
+		</div>
+
+		<!-- 表格 -->
+		<table class="table table-hover" id="customer_table">
+			<thead>
+				<tr>
+					<td>编号</td>
+					<td>姓名</td>
+					<td>状态</td>
+					<td>手机号</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+			<tbody>
+				
+			</tbody>
+		</table>
+
+
+		<!-- / 表格 -->
+
+
+		<!-- 模态框 -->
+<div class="modal fade" id="customerModal" tabindex="-1">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">添加顾客信息</h5>
+        <button type="button" class="close" onclick="closeCustomerModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+  <!-- 表单 -->
+		<form action="/register" id="customer_form">
+			<!-- 密码 -->
+			<div class="form-group row">
+				<label for="input_id" class="col-2 text-right">ID</label>
+				<div class="col-10" >
+					<input id="input_id" name="id" type="id" class="form-control">
+				</div>
+			</div>
+			<!-- / 密码 -->
+			<!-- 用户名 -->
+			<div class="form-group row">
+				<label for="input_realname" class="col-2 text-right">姓名</label>
+				<div class="col-10" >
+					<input id="input_realname" name="realname" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 用户名 -->
+			<!-- 手机 -->
+			<div class="form-group row">
+				<label for="input_telephone" class="col-2 text-right">手机号</label>
+				<div class="col-10" >
+					<input id="input_telephone" name="telephone" type="text" class="form-control">
+				</div>
+			</div>
+			<!-- / 手机号 -->
+		</form>
+		<!-- / 表单 -->     
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeCustomerModal()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="submitCustomer()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- / 模态框 -->
+<!-- 提示框 -->
+<div class="toast"  style="position: absolute;top: 6px;right: 1em">
+  <div class="toast-header">
+    <i class="fa fa-bell text-success mr-5"></i>
+    <strong class="mr-auto">success</strong>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">
+      <span>&times;</span>
+    </button>
+  </div>
+  <div class="toast-body"> </div> 
+</div>
+
+
+
+
+	</div>
+</body>
+</html>
